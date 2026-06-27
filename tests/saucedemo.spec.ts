@@ -1,68 +1,82 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const STANDARD_USER = 'standard_user';
-const PASSWORD = 'secret_sauce';
-const INVALID_PASSWORD = 'wrong_password';
-const PRODUCT_NAME = 'Sauce Labs Backpack';
-
-async function login(page: Page) {
-  await page.goto('/');
-  await page.getByPlaceholder('Username').fill(STANDARD_USER);
-  await page.getByPlaceholder('Password').fill(PASSWORD);
-  await page.getByRole('button', { name: 'Login' }).click();
-}
-
-async function addBackpackToCart(page: Page) {
-  await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-  await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
-}
+import { test } from '@playwright/test';
+import { checkoutInfo, messages, products, users } from './data/saucedemo.data';
+import { CartPage } from './pages/cart.page';
+import { CheckoutCompletePage } from './pages/checkout-complete.page';
+import { CheckoutInformationPage } from './pages/checkout-information.page';
+import { CheckoutOverviewPage } from './pages/checkout-overview.page';
+import { InventoryPage } from './pages/inventory.page';
+import { LoginPage } from './pages/login.page';
 
 test.describe('Sauce Demo UI tests', () => {
   test('TC-001: login fails with invalid password', async ({ page }) => {
-    await page.goto('/');
-    await page.getByPlaceholder('Username').fill(STANDARD_USER);
-    await page.getByPlaceholder('Password').fill(INVALID_PASSWORD);
-    await page.getByRole('button', { name: 'Login' }).click();
+    const loginPage = new LoginPage(page);
 
-    await expect(page).not.toHaveURL(/.*inventory\.html/);
-    await expect(page.locator('[data-test="error"]')).toBeVisible();
-    await expect(page.locator('[data-test="error"]')).toContainText('Username and password do not match');
+    await test.step('Open login page and check UI elements', async () => {
+      await loginPage.open();
+      await loginPage.expectLoginPageVisible();
+    });
+
+    await test.step('Submit invalid login credentials', async () => {
+      await loginPage.login(users.invalidPassword.username, users.invalidPassword.password);
+    });
+
+    await test.step('Verify login error and current page state', async () => {
+      await loginPage.expectLoginErrorMessage(messages.loginFailed);
+      await loginPage.expectStillOnLoginPage();
+    });
   });
 
-  test('TC-002: user can complete the happy path purchase flow', async ({ page }) => {
-    await login(page);
+  test('TC-002: complete happy checkout flow', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const inventoryPage = new InventoryPage(page);
+    const cartPage = new CartPage(page);
+    const checkoutInformationPage = new CheckoutInformationPage(page);
+    const checkoutOverviewPage = new CheckoutOverviewPage(page);
+    const checkoutCompletePage = new CheckoutCompletePage(page);
 
-    await expect(page).toHaveURL(/.*inventory\.html/);
-    await expect(page.getByText('Products')).toBeVisible();
-    await expect(page.locator('[data-test="inventory-item"]')).toHaveCount(6);
+    await test.step('Login successfully', async () => {
+      await loginPage.open();
+      await loginPage.expectLoginPageVisible();
+      await loginPage.login(users.standard.username, users.standard.password);
+      await inventoryPage.expectInventoryPageVisible();
+    });
 
-    await addBackpackToCart(page);
+    await test.step('Add product to cart from inventory page', async () => {
+      await inventoryPage.expectProductVisible(products.backpack.name);
+      await inventoryPage.addProductToCart(
+        products.backpack.addToCartTestId,
+        products.backpack.removeTestId
+      );
+    });
 
-    await page.locator('[data-test="shopping-cart-link"]').click();
-    await expect(page).toHaveURL(/.*cart\.html/);
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText(PRODUCT_NAME);
+    await test.step('Open cart and verify selected product', async () => {
+      await inventoryPage.openCart();
+      await cartPage.expectCartPageVisible();
+      await cartPage.expectCartItemCount(1);
+      await cartPage.expectProductInCart(products.backpack.name);
+    });
 
-    await page.locator('[data-test="checkout"]').click();
-    await expect(page).toHaveURL(/.*checkout-step-one\.html/);
+    await test.step('Proceed to checkout and input customer information', async () => {
+      await cartPage.checkout();
+      await checkoutInformationPage.expectCheckoutInformationPageVisible();
+      await checkoutInformationPage.fillCustomerInformation(
+        checkoutInfo.firstName,
+        checkoutInfo.lastName,
+        checkoutInfo.postalCode
+      );
+      await checkoutInformationPage.continueToOverview();
+    });
 
-    await page.locator('[data-test="firstName"]').fill('Test');
-    await page.locator('[data-test="lastName"]').fill('User');
-    await page.locator('[data-test="postalCode"]').fill('100-0001');
-    await page.locator('[data-test="continue"]').click();
+    await test.step('Verify order overview and finish order', async () => {
+      await checkoutOverviewPage.expectCheckoutOverviewPageVisible(products.backpack.name);
+      await checkoutOverviewPage.finishOrder();
+    });
 
-    await expect(page).toHaveURL(/.*checkout-step-two\.html/);
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText(PRODUCT_NAME);
-    await expect(page.locator('[data-test="payment-info-label"]')).toBeVisible();
-    await expect(page.locator('[data-test="shipping-info-label"]')).toBeVisible();
-    await expect(page.locator('[data-test="total-info-label"]')).toBeVisible();
-
-    await page.locator('[data-test="finish"]').click();
-
-    await expect(page).toHaveURL(/.*checkout-complete\.html/);
-    await expect(page.locator('[data-test="complete-header"]')).toHaveText('Thank you for your order!');
-
-    await page.locator('[data-test="back-to-products"]').click();
-    await expect(page).toHaveURL(/.*inventory\.html/);
-    await expect(page.getByText('Products')).toBeVisible();
+    await test.step('Verify order completion and return to products page', async () => {
+      await checkoutCompletePage.expectCheckoutCompletePageVisible(messages.orderComplete);
+      await checkoutCompletePage.backToProducts();
+      await inventoryPage.expectInventoryPageVisible();
+      await inventoryPage.expectCartBadgeHidden();
+    });
   });
 });
