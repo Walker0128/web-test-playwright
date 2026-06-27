@@ -17,7 +17,7 @@ Sauce Demoは、ログイン、商品一覧、カート、チェックアウト�
 ## テスト観点チェックリスト
 
 以下は、Sauce Demoに対して考えられる主なテスト観点です。
-本課題では、この中から代表的な3件を手動テストケース化し、同じ3件をPlaywrightで自動化しています。
+本課題では、この中から代表的な2件を手動テストケース化し、同じ2件をPlaywrightで自動化しています。
 
 ### ログイン / 認証
 
@@ -188,7 +188,7 @@ Sauce Demoは、ログイン、商品一覧、カート、チェックアウト�
 | 目的         | 不正な認証情報ではログインできず、適切なエラーメッセージが表示されることを確認する                            |
 | 前提条件     | Sauce Demoのログインページを開いていること                                                                    |
 | テストデータ | Username:`standard_user` / Password: `wrong_password`                                                     |
-| 手順         | 1. Usernameに`standard_user`を入力する2. Passwordに`wrong_password`を入力する3. Loginボタンをクリックする |
+| 手順         | 1. Usernameに`standard_user`を入力する<br>2. Passwordに`wrong_password`を入力する<br>3. Loginボタンをクリックする |
 | 期待結果     | 商品一覧ページへ遷移せず、ログインエラーメッセージが表示される                                                |
 
 ### TC-002: ログインから注文完了までのHappy Flowが成功すること
@@ -198,7 +198,7 @@ Sauce Demoは、ログイン、商品一覧、カート、チェックアウト�
 | 目的         | ECサイトの主要な回帰テストとして、ログイン、商品選択、カート確認、チェックアウト、注文完了、商品一覧へ戻る流れが成功することを確認する                                                                                                                                                                                                                                                       |
 | 前提条件     | Sauce Demoのログインページを開いていること                                                                                                                                                                                                                                                                                                                                                   |
 | テストデータ | Username:`standard_user` / Password: `secret_sauce`商品: `Sauce Labs Backpack`First Name: `Test` / Last Name: `User` / Postal Code: `100-0001`                                                                                                                                                                                                                                   |
-| 手順         | 1.`standard_user`でログインする2. 商品一覧ページが表示されることを確認する3. `Sauce Labs Backpack`をカートに追加する4. カート画面へ移動し、商品が追加されていることを確認する5. Checkoutボタンをクリックする6. 購入者情報を入力してContinueをクリックする7. Checkout Overviewで商品・支払情報・配送情報・合計金額を確認する8. Finishボタンをクリックする9. Back Homeボタンをクリックする |
+| 手順         | 1.`standard_user`でログインする<br>2. 商品一覧ページが表示されることを確認する<br>3. `Sauce Labs Backpack`をカートに追加する<br>4. カート画面へ移動し、商品が追加されていることを確認する<br>5. Checkoutボタンをクリックする<br>6. 購入者情報を入力してContinueをクリックする<br>7. Checkout Overviewで商品・支払情報・配送情報・合計金額を確認する<br>8. Finishボタンをクリックする9. Back Homeボタンをクリックする |
 | 期待結果     | 注文完了画面で`Thank you for your order!`が表示され、Back Homeクリック後に商品一覧ページへ戻る                                                                                                                                                                                                                                                                                             |
 
 ## 自動テスト
