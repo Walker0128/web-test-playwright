@@ -13,9 +13,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html']],
   use: {
     baseURL: 'https://www.saucedemo.com',
-    trace: 'on-first-retry',
+    trace: 'on', //option: on-first-retry, retain-on-failure
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'on', 
   },
   projects: [
     {

@@ -11,12 +11,16 @@ export class CheckoutOverviewPage extends BasePage {
     await expect(this.byTestId('title')).toHaveText('Checkout: Overview');
     await expect(this.byTestId('inventory-item-name')).toHaveText(productName);
     await expect(this.byTestId('inventory-item-price')).toBeVisible();
+
     await expect(this.byTestId('payment-info-label')).toBeVisible();
     await expect(this.byTestId('shipping-info-label')).toBeVisible();
     await expect(this.byTestId('total-info-label')).toBeVisible();
-    await expect(this.byTestId('summary-subtotal-label')).toBeVisible();
-    await expect(this.byTestId('summary-tax-label')).toBeVisible();
-    await expect(this.byTestId('summary-total-label')).toBeVisible();
+
+    // Correct Sauce Demo data-test IDs
+    await expect(this.byTestId('subtotal-label')).toContainText('Item total:');
+    await expect(this.byTestId('tax-label')).toContainText('Tax:');
+    await expect(this.byTestId('total-label')).toContainText('Total:');
+
     await expect(this.byTestId('finish')).toBeVisible();
     await expect(this.byTestId('cancel')).toBeVisible();
   }
