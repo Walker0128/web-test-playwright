@@ -1,7 +1,7 @@
 {
   "name": "web-test-playwright",
   "version": "1.0.0",
-  "description": "Manual and automated UI test cases for Sauce Demo using Playwright.",
+  "description": "Manual and automated UI test cases for Sauce Demo using Playwright and TypeScript.",
   "private": false,
   "scripts": {
     "test": "playwright test",
